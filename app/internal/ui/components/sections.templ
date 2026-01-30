@@ -33,30 +33,30 @@ type ScriptureWithTalk struct {
 // PresidentsHeader renders the Church Presidents section header.
 templ PresidentsHeader() {
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+		<h2 class="text-3xl font-semibold text-primary mb-2">
 			Recent Remarks From Church Presidents
 		</h2>
-		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px]"></div>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px]"></div>
 	</div>
 }
 
 // LeadersHeader renders the Other Leaders section header.
 templ LeadersHeader() {
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+		<h2 class="text-3xl font-semibold text-primary mb-2">
 			Recent Remarks From Other Church Leaders
 		</h2>
-		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px]"></div>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px]"></div>
 	</div>
 }
 
 // ScripturesHeader renders the Scriptures section header.
 templ ScripturesHeader() {
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+		<h2 class="text-3xl font-semibold text-primary mb-2">
 			Related Scriptures
 		</h2>
-		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px]"></div>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px]"></div>
 	</div>
 }
 
@@ -176,7 +176,7 @@ templ ScriptureCard(scripture ScriptureWithTalk) {
 // ScripturesGroup renders a scripture category group.
 templ ScripturesGroup(title string, scriptures []ScriptureWithTalk) {
 	<div class="mt-10 max-w-4xl mx-auto">
-		<h3 class="text-2xl font-semibold text-gray-900 mb-4">{ title }</h3>
+		<h3 class="text-2xl font-semibold text-primary mb-4">{ title }</h3>
 		if len(scriptures) == 0 {
 			<p class="text-lg text-gray-500 italic">Finding relevant scriptures...</p>
 		} else {
@@ -216,7 +216,7 @@ templ SectionLoading() {
 templ Section(title string) {
 	<section class="bg-surface-alt py-8">
 		<div class="container mx-auto px-4">
-			<h2 class="text-2xl font-semibold text-accent-gold">{ title }</h2>
+			<h2 class="text-2xl font-semibold text-primary">{ title }</h2>
 			{ children... }
 		</div>
 	</section>
@@ -225,10 +225,10 @@ templ Section(title string) {
 // PresidentsLoading renders loading state for Church Presidents section
 templ PresidentsLoading() {
 	<div id="presidents-section" class="max-w-4xl mx-auto">
-		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+		<h2 class="text-3xl font-semibold text-primary mb-2">
 			Recent Remarks From Church Presidents
 		</h2>
-		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px] mb-6"></div>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px] mb-6"></div>
 
 		<div class="flex items-center gap-3 text-gray-500">
 			<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -264,10 +264,10 @@ templ PresidentsLoading() {
 // LeadersLoading renders loading state for Other Leaders section
 templ LeadersLoading() {
 	<div id="leaders-section" class="max-w-4xl mx-auto mt-12">
-		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+		<h2 class="text-3xl font-semibold text-primary mb-2">
 			Recent Remarks From Other Church Leaders
 		</h2>
-		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px] mb-6"></div>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px] mb-6"></div>
 
 		<div class="flex items-center gap-3 text-gray-500">
 			<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -294,10 +294,10 @@ templ LeadersLoading() {
 // ScripturesLoading renders loading state for Scriptures section
 templ ScripturesLoading() {
 	<div id="scriptures-section" class="max-w-4xl mx-auto mt-12">
-		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+		<h2 class="text-3xl font-semibold text-primary mb-2">
 			Related Scriptures
 		</h2>
-		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px] mb-6"></div>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px] mb-6"></div>
 
 		<div class="flex items-center gap-3 text-gray-500">
 			<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -325,7 +325,7 @@ templ ScripturesLoading() {
 // SummarySection renders the final summary paragraphs.
 templ SummarySection(paragraphs []string) {
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-3xl font-semibold text-gray-900 mb-2">Summary</h2>
+		<h2 class="text-3xl font-semibold text-primary mb-2">Summary</h2>
 		<div class="w-24 h-[2px] bg-primary rounded-[2px] mb-6"></div>
 		<div class="space-y-6 max-w-[720px]">
 			for _, p := range paragraphs {
@@ -338,7 +338,7 @@ templ SummarySection(paragraphs []string) {
 // SummaryLoading renders loading state for Summary section
 templ SummaryLoading() {
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-3xl font-semibold text-gray-900 mb-2">Summary</h2>
+		<h2 class="text-3xl font-semibold text-primary mb-2">Summary</h2>
 		<div class="w-24 h-[2px] bg-primary rounded-[2px] mb-6"></div>
 		<div class="space-y-4 animate-pulse">
 			<div class="h-4 bg-gray-200 rounded-[2px] w-full"></div>

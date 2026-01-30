@@ -6,17 +6,18 @@
 
 @theme {
   /* Reference site colors */
-  --color-primary: #157493;
-  --color-primary-hover: #007DA5;
-  --color-accent-gold: #007DA5;
+  --color-primary: #177C9C;
+  --color-primary-hover: #146E8B;
+  --color-accent-gold: #E66A1F;
   --color-surface: #FFFFFF;
   --color-surface-alt: #FFFFFF;
+  --color-gray-900: #0D0F10;
 
-  /* Typography - Noto Sans with sensible fallbacks */
-  --font-sans: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
-  --default-font-family: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
-  --font-mono: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
-  --default-mono-font-family: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+  /* Typography - Open Sans body, Domine headings */
+  --font-sans: "Open Sans", "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+  --default-font-family: "Open Sans", "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+  --font-mono: "Open Sans", "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+  --default-mono-font-family: "Open Sans", "Noto Sans", "Source Sans Pro", Arial, sans-serif;
 
   /* Typography scale (matches reference sizing) */
   --text-base: 1rem; /* 16px */
@@ -56,6 +57,22 @@
 html,
 body {
   font-family: var(--default-font-family);
+  color: var(--color-gray-900);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Domine", serif;
+  }
+
+  a {
+    color: var(--color-accent-gold);
+  }
 }
 
 /* Skip link - visible on focus for keyboard navigation (WCAG 2.4.1) */

@@ -9,6 +9,9 @@ templ Base(title string) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 			<meta name="apple-mobile-web-app-capable" content="yes"/>
 			<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 			<title>{ title }</title>
 			<link rel="stylesheet" href="/static/css/output.css"/>
 			<script src="/static/js/htmx.min.js"></script>
@@ -27,7 +30,7 @@ templ Base(title string) {
 				}
 			</style>
 		</head>
-		<body class="h-full bg-surface text-gray-700 antialiased">
+		<body class="h-full bg-surface text-gray-900 antialiased">
 			<!-- Skip Link for Keyboard Navigation (WCAG 2.4.1) -->
 			<a href="#main-content" class="skip-link">
 				Skip to main content
