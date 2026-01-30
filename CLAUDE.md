@@ -6,7 +6,7 @@
 |---------|-------|-------|
 | **Model** | `gemini-3-flash-preview` | NEVER use 2.0, 2.5, or any other version. Always use 3-flash-preview. |
 | **Backend** | Direct REST API | Do NOT use genai/ADK libraries (buggy in Cloud Run). Use raw HTTP. |
-| **Region** | `us-central1` | Iowa - required for all deployments (same datacenter as future services) |
+| **Region** | `us-west1` | Oregon - required for Cloud Run deployments |
 | **Reference** | https://aistackregistry.com | Authoritative source for model defaults and configurations |
 
 ### Model Specification (from aistackregistry.com)
@@ -44,7 +44,7 @@
 2. Do NOT substitute with `gemini-2.0-flash`, `gemini-2.5-flash`, `gemini-3.0-flash-preview`, or any other variant
 3. Use direct REST calls to `generativelanguage.googleapis.com` - DO NOT use genai/ADK libraries (they have bugs in Cloud Run)
 4. Set `GEMINI_API_KEY` environment variable (from Google Secret Manager)
-5. All Cloud Run deployments MUST use region `us-central1`
+5. All Cloud Run deployments MUST use region `us-west1`
 
 ---
 
@@ -161,9 +161,11 @@ The architecture uses parallel agents with structured outputs for reliable, pred
 ### Environment Variables
 ```bash
 TOOLBOX_URL=http://...   # MCP Toolbox server URL
-GEMINI_API_KEY=...       # Gemini API key (from Google Secret Manager: gemini-api-key)
+GEMINI_API_KEY=...       # Gemini API key (from Google Secret Manager: GEMINI_API_KEY)
+API_PORT=8081            # Internal SSE port (optional)
+ASSETS_BASE_URL=...      # Optional override for asset hosting
 GOOGLE_CLOUD_PROJECT=... # GCP project (for Cloud Run deployment)
-GOOGLE_CLOUD_LOCATION=.. # Region (us-central1)
+GOOGLE_CLOUD_LOCATION=.. # Region (us-west1)
 ```
 
 ### Secrets (Google Secret Manager)
@@ -196,8 +198,9 @@ All three sub-agents run concurrently via goroutines, each calling Gemini REST A
 ### Cloud Run Services
 | Service | URL | Description |
 |---------|-----|-------------|
-| prophet-agent | https://prophet-agent-3izw7vdi5a-uc.a.run.app | Main API server (Go) |
-| prophet-toolbox | https://prophet-toolbox-3izw7vdi5a-uc.a.run.app | MCP Toolbox server |
+| ask-a-prophet | https://ask-a-prophet-3izw7vdi5a-uw.a.run.app | Main API server (Go) |
+| prophet-toolbox | https://prophet-toolbox-3izw7vdi5a-uw.a.run.app | MCP Toolbox server |
+| gemini-probe | https://gemini-probe-3izw7vdi5a-uw.a.run.app | Diagnostics / test harness |
 
 ### Cloudflare Worker (Proxy)
 The Cloudflare Worker proxies requests to Cloud Run, handling SSE streaming correctly.
@@ -214,12 +217,24 @@ The Cloudflare Worker proxies requests to Cloud Run, handling SSE streaming corr
 cd cloudflare-worker && npx wrangler deploy
 ```
 
+Ensure `BACKEND_URL` in `wrangler.toml` points to the current Cloud Run URL.
+
 ### Deploy Cloud Run
 ```bash
-cd app && gcloud run deploy prophet-agent --source . --region us-central1 \
+cd app && gcloud run deploy ask-a-prophet --source . --region us-west1 \
   --allow-unauthenticated \
-  --set-env-vars="TOOLBOX_URL=https://prophet-toolbox-3izw7vdi5a-uc.a.run.app,HTTP_PORT=8080" \
+  --set-env-vars="TOOLBOX_URL=https://prophet-toolbox-3izw7vdi5a-uw.a.run.app,API_PORT=8081" \
   --set-secrets="GEMINI_API_KEY=GEMINI_API_KEY:latest"
+```
+
+### Deploy Toolbox
+```bash
+cd app && gcloud run deploy prophet-toolbox --source . \
+  --dockerfile Dockerfile.toolbox \
+  --region us-west1 \
+  --set-env-vars="DB_HOST=/cloudsql/temple-square:us-west1:temple-square-db,DB_NAME=conference,DB_USER=postgres,DB_SSL_MODE=disable" \
+  --set-secrets="DB_PASSWORD=temple-square-db-password:latest" \
+  --add-cloudsql-instances=temple-square:us-west1:temple-square-db
 ```
 
 ## Project-Specific Notes
