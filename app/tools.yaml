@@ -1,0 +1,218 @@
+# MCP Toolbox Configuration for Temple Square
+# This defines database sources, tools, and toolsets for the prophet-agent
+
+# =============================================================================
+# SOURCES - Database connections
+# =============================================================================
+sources:
+  temple-square-db:
+    kind: cloud-sql-postgres
+    project: temple-square
+    region: us-west1
+    instance: temple-square-db
+    database: ${DB_NAME:-conference}
+    user: ${DB_USER:-postgres}
+    password: ${DB_PASSWORD}
+    ipType: public
+
+# =============================================================================
+# TOOLS - Database queries exposed as tools
+# =============================================================================
+tools:
+  # ---------------------------------------------------------------------------
+  # Scripture Tools
+  # ---------------------------------------------------------------------------
+  search_scriptures:
+    kind: postgres-sql
+    source: temple-square-db
+    description: |
+      Search canonical scriptures (Bible, Book of Mormon, Doctrine and Covenants,
+      Pearl of Great Price) by keyword or topic. Returns matching verses with full text.
+    parameters:
+      - name: query
+        type: string
+        description: The search query for scriptures (keywords, topics, or phrases)
+      - name: limit
+        type: integer
+        description: Maximum results to return (default 10)
+        default: 10
+    statement: |
+      SELECT id, volume, book_name, chapter_number, verse_number, verse_id, verse_text
+      FROM scriptures
+      WHERE to_tsvector('english', verse_text) @@ plainto_tsquery('english', $1)
+      ORDER BY ts_rank(to_tsvector('english', verse_text), plainto_tsquery('english', $1)) DESC
+      LIMIT $2
+
+  get_scripture_by_reference:
+    kind: postgres-sql
+    source: temple-square-db
+    description: Get a specific scripture verse by book, chapter, and verse number.
+    parameters:
+      - name: book_name
+        type: string
+        description: The book name (e.g., "John", "1 Nephi", "D&C")
+      - name: chapter
+        type: integer
+        description: Chapter number
+      - name: verse
+        type: integer
+        description: Verse number
+    statement: |
+      SELECT id, volume, book_name, chapter_number, verse_number, verse_id, verse_text
+      FROM scriptures
+      WHERE book_name ILIKE $1 AND chapter_number = $2 AND verse_number = $3
+      LIMIT 1
+
+  # ---------------------------------------------------------------------------
+  # Talk Tools
+  # ---------------------------------------------------------------------------
+  search_talks:
+    kind: postgres-sql
+    source: temple-square-db
+    description: |
+      Search General Conference talks from 2020-2025 by keyword or topic.
+      Returns matching talks with speaker info, title, conference date, and content excerpts.
+    parameters:
+      - name: query
+        type: string
+        description: The search query for conference talks
+      - name: limit
+        type: integer
+        description: Maximum results to return (default 5)
+        default: 5
+    statement: |
+      SELECT t.id, t.talk_id, s.name as speaker, t.speaker_id, t.title, t.conference,
+             substring(t.content, 1, 2000) as content, t.kicker, s.headshot_square as headshot
+      FROM talks t
+      JOIN speakers s ON t.speaker_id = s.id
+      WHERE to_tsvector('english', t.content) @@ plainto_tsquery('english', $1)
+      ORDER BY
+        ts_rank(to_tsvector('english', t.content), plainto_tsquery('english', $1)) DESC,
+        t.conference DESC
+      LIMIT $2
+
+  search_talks_by_speaker:
+    kind: postgres-sql
+    source: temple-square-db
+    description: |
+      Search talks by a specific speaker. Use speaker slug format (e.g., 'dallin-oaks', 'russell-nelson').
+    parameters:
+      - name: speaker_slug
+        type: string
+        description: The speaker's name slug (e.g., 'dallin-oaks', 'russell-nelson')
+      - name: limit
+        type: integer
+        description: Maximum results to return (default 5)
+        default: 5
+    statement: |
+      SELECT t.id, t.talk_id, s.name as speaker, t.speaker_id, t.title, t.conference,
+             substring(t.content, 1, 2000) as content, t.kicker, s.headshot_square as headshot
+      FROM talks t
+      JOIN speakers s ON t.speaker_id = s.id
+      WHERE s.name_slug = $1
+      ORDER BY t.conference DESC
+      LIMIT $2
+
+  search_talks_mentioning_scripture:
+    kind: postgres-sql
+    source: temple-square-db
+    description: |
+      Find talks that mention or reference a specific scripture (by book name or reference).
+      Returns talks with the scripture context highlighted.
+    parameters:
+      - name: scripture_reference
+        type: string
+        description: Scripture reference to search for (e.g., "John 3:16", "Moroni 10")
+      - name: limit
+        type: integer
+        description: Maximum results to return (default 5)
+        default: 5
+    statement: |
+      SELECT t.id, t.talk_id, s.name as speaker, t.speaker_id, t.title, t.conference,
+             substring(t.content, 1, 2000) as content, t.kicker, s.headshot_square as headshot
+      FROM talks t
+      JOIN speakers s ON t.speaker_id = s.id
+      WHERE t.content ILIKE '%' || $1 || '%'
+      ORDER BY t.conference DESC
+      LIMIT $2
+
+  get_presidents_talks:
+    kind: postgres-sql
+    source: temple-square-db
+    description: |
+      Get recent talks from Church Presidents (First Presidency members).
+      Returns talks from President Oaks, President Nelson, and other First Presidency members.
+    parameters:
+      - name: query
+        type: string
+        description: Optional topic to filter talks
+      - name: limit
+        type: integer
+        description: Maximum results to return (default 5)
+        default: 5
+    statement: |
+      SELECT t.id, t.talk_id, s.name as speaker, t.speaker_id, t.title, t.conference,
+             substring(t.content, 1, 2000) as content, t.kicker, s.headshot_square as headshot
+      FROM talks t
+      JOIN speakers s ON t.speaker_id = s.id
+      WHERE s.name_slug IN ('dallin-oaks', 'russell-nelson', 'henry-eyring')
+        AND ($1 = '' OR to_tsvector('english', t.content) @@ plainto_tsquery('english', $1))
+      ORDER BY
+        CASE s.name_slug
+          WHEN 'dallin-oaks' THEN 1
+          WHEN 'russell-nelson' THEN 2
+          ELSE 3
+        END,
+        t.conference DESC
+      LIMIT $2
+
+  get_leaders_talks:
+    kind: postgres-sql
+    source: temple-square-db
+    description: |
+      Get recent talks from Church leaders (apostles, seventies, auxiliary leaders).
+      Excludes First Presidency to focus on other general authorities.
+    parameters:
+      - name: query
+        type: string
+        description: Optional topic to filter talks
+      - name: limit
+        type: integer
+        description: Maximum results to return (default 3)
+        default: 3
+    statement: |
+      SELECT t.id, t.talk_id, s.name as speaker, t.speaker_id, t.title, t.conference,
+             substring(t.content, 1, 2000) as content, t.kicker, s.headshot_square as headshot,
+             s.calling
+      FROM talks t
+      JOIN speakers s ON t.speaker_id = s.id
+      WHERE s.name_slug NOT IN ('dallin-oaks', 'russell-nelson', 'henry-eyring')
+        AND ($1 = '' OR to_tsvector('english', t.content) @@ plainto_tsquery('english', $1))
+      ORDER BY t.conference DESC
+      LIMIT $2
+
+# =============================================================================
+# TOOLSETS - Grouped tools for specific agents
+# =============================================================================
+toolsets:
+  scriptures:
+    - search_scriptures
+    - get_scripture_by_reference
+    - search_talks_mentioning_scripture
+
+  presidents:
+    - get_presidents_talks
+    - search_talks_by_speaker
+
+  leaders:
+    - get_leaders_talks
+    - search_talks
+
+  all:
+    - search_scriptures
+    - get_scripture_by_reference
+    - search_talks
+    - search_talks_by_speaker
+    - search_talks_mentioning_scripture
+    - get_presidents_talks
+    - get_leaders_talks

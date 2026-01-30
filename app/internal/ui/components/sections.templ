@@ -1,0 +1,358 @@
+package components
+
+// SpeakerQuote defines a quote from a church leader.
+type SpeakerQuote struct {
+	Name       string
+	Calling    string
+	TalkTitle  string
+	Conference string
+	Quotes     []string
+	Headshot   string
+}
+
+// ScriptureRef defines a scripture reference.
+type ScriptureRef struct {
+	Reference string // e.g., "John 3:16"
+	Text      string
+	Volume    string
+}
+
+// TalkPullQuote defines a small pull quote from a talk (no headshot).
+type TalkPullQuote struct {
+	Speaker string
+	Title   string
+	Quote   string
+}
+
+// ScriptureWithTalk combines a scripture with a related talk quote.
+type ScriptureWithTalk struct {
+	ScriptureRef
+	RelatedTalk *TalkPullQuote
+}
+
+// PresidentsHeader renders the Church Presidents section header.
+templ PresidentsHeader() {
+	<div class="max-w-4xl mx-auto">
+		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+			Recent Remarks From Church Presidents
+		</h2>
+		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px]"></div>
+	</div>
+}
+
+// LeadersHeader renders the Other Leaders section header.
+templ LeadersHeader() {
+	<div class="max-w-4xl mx-auto">
+		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+			Recent Remarks From Other Church Leaders
+		</h2>
+		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px]"></div>
+	</div>
+}
+
+// ScripturesHeader renders the Scriptures section header.
+templ ScripturesHeader() {
+	<div class="max-w-4xl mx-auto">
+		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+			Related Scriptures
+		</h2>
+		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px]"></div>
+	</div>
+}
+
+// speakerInitial returns the first character of the speaker's name.
+func speakerInitial(name string) string {
+	if len(name) == 0 {
+		return "?"
+	}
+	runes := []rune(name)
+	return string(runes[0])
+}
+
+// SpeakerCard renders a speaker quote card with headshot and quotes.
+templ SpeakerCard(speaker SpeakerQuote) {
+	<article class="max-w-4xl mx-auto py-6 border-b border-gray-200 last:border-0">
+		<header class="flex items-center gap-4 mb-4">
+			if speaker.Headshot != "" {
+				<img
+					src={ speaker.Headshot }
+					alt={ speaker.Name }
+					class="w-16 h-16 rounded-full object-cover"
+					loading="lazy"
+				/>
+			} else {
+				<div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+					<span class="text-2xl text-gray-400">{ speakerInitial(speaker.Name) }</span>
+				</div>
+			}
+			<div>
+				<h3 class="text-lg font-semibold text-gray-900">{ speaker.Name }</h3>
+				if speaker.TalkTitle != "" && speaker.Conference != "" {
+					<p class="text-base text-gray-600 italic">
+						{ speaker.TalkTitle }, { speaker.Conference }
+					</p>
+				} else if speaker.TalkTitle != "" {
+					<p class="text-base text-gray-600 italic">
+						{ speaker.TalkTitle }
+					</p>
+				} else if speaker.Conference != "" {
+					<p class="text-base text-gray-600 italic">
+						{ speaker.Conference }
+					</p>
+				}
+			</div>
+		</header>
+
+		<div class="space-y-3">
+			for _, quote := range speaker.Quotes {
+				<blockquote class="text-lg text-gray-700 leading-relaxed border-l-2 border-accent-gold pl-4">
+					"{ quote }"
+				</blockquote>
+			}
+		</div>
+	</article>
+}
+
+// PresidentsSection renders the complete Church Presidents section.
+templ PresidentsSection(speakers []SpeakerQuote) {
+	@PresidentsHeader()
+	<div class="mt-8">
+		for _, speaker := range speakers {
+			@SpeakerCard(speaker)
+		}
+	</div>
+}
+
+// LeadersSection renders the complete Other Leaders section.
+templ LeadersSection(speakers []SpeakerQuote) {
+	@LeadersHeader()
+	<div class="mt-8">
+		for _, speaker := range speakers {
+			@SpeakerCard(speaker)
+		}
+	</div>
+}
+
+// ScriptureCard renders a scripture with an optional related talk pull quote.
+templ ScriptureCard(scripture ScriptureWithTalk) {
+	<article class="w-full py-6">
+		<!-- Scripture Card with distinct styling -->
+		<div class="bg-white rounded-[2px] border border-gray-200 p-6">
+			<div class="flex items-start gap-4">
+				<div class="flex-shrink-0 px-3 py-1 bg-accent-gold/10 text-accent-gold text-sm font-semibold rounded-[2px]">
+					{ scripture.Volume }
+				</div>
+				<div class="flex-1">
+					<h4 class="text-base font-semibold text-gray-900 mb-2">
+						{ scripture.Reference }
+					</h4>
+					<p class="text-base text-gray-700 leading-relaxed italic">
+						"{ scripture.Text }"
+					</p>
+				</div>
+			</div>
+
+			<!-- Related Talk Pull Quote (smaller, no headshot) -->
+			if scripture.RelatedTalk != nil {
+				<div class="mt-4 pt-4 border-t border-gray-200">
+					<div class="flex items-start gap-3">
+						<div class="flex-shrink-0 w-1 bg-accent-gold rounded-[2px] self-stretch"></div>
+						<div class="flex-1">
+							<p class="text-sm text-gray-600 italic mb-2">
+								"{ scripture.RelatedTalk.Quote }"
+							</p>
+							<p class="text-sm text-gray-500">
+								— <span class="font-medium">{ scripture.RelatedTalk.Speaker }</span>,
+								<span class="italic">{ scripture.RelatedTalk.Title }</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	</article>
+}
+
+// ScripturesGroup renders a scripture category group.
+templ ScripturesGroup(title string, scriptures []ScriptureWithTalk) {
+	<div class="mt-10 max-w-4xl mx-auto">
+		<h3 class="text-2xl font-semibold text-gray-900 mb-4">{ title }</h3>
+		if len(scriptures) == 0 {
+			<p class="text-lg text-gray-500 italic">Finding relevant scriptures...</p>
+		} else {
+			<div class="grid grid-cols-1 gap-4 w-full">
+				for _, scripture := range scriptures {
+					@ScriptureCard(scripture)
+				}
+			</div>
+		}
+	</div>
+}
+
+// ScripturesSection renders scripture categories in ordered groups.
+templ ScripturesSection(bible []ScriptureWithTalk, bom []ScriptureWithTalk, other []ScriptureWithTalk) {
+	@ScripturesHeader()
+	@ScripturesGroup("Bible", bible)
+	@ScripturesGroup("Book of Mormon", bom)
+	@ScripturesGroup("Other Scriptures", other)
+}
+
+// SectionLoading renders a loading placeholder for sections.
+templ SectionLoading() {
+	<div class="max-w-4xl mx-auto py-8">
+		<div class="animate-pulse space-y-4">
+			<div class="h-8 bg-gray-200 rounded-[2px] w-2/3"></div>
+			<div class="h-[2px] bg-gray-200 rounded-[2px] w-24"></div>
+			<div class="space-y-3 mt-8">
+				<div class="h-4 bg-gray-200 rounded-[2px] w-full"></div>
+				<div class="h-4 bg-gray-200 rounded-[2px] w-5/6"></div>
+				<div class="h-4 bg-gray-200 rounded-[2px] w-4/6"></div>
+			</div>
+		</div>
+	</div>
+}
+
+// Section renders a generic content section (legacy component).
+templ Section(title string) {
+	<section class="bg-surface-alt py-8">
+		<div class="container mx-auto px-4">
+			<h2 class="text-2xl font-semibold text-accent-gold">{ title }</h2>
+			{ children... }
+		</div>
+	</section>
+}
+
+// PresidentsLoading renders loading state for Church Presidents section
+templ PresidentsLoading() {
+	<div id="presidents-section" class="max-w-4xl mx-auto">
+		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+			Recent Remarks From Church Presidents
+		</h2>
+		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px] mb-6"></div>
+
+		<div class="flex items-center gap-3 text-gray-500">
+			<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+			</svg>
+			<span>Searching teachings from Church Presidents...</span>
+		</div>
+
+		<!-- Skeleton cards -->
+		<div class="mt-6 space-y-6 animate-pulse">
+			<div class="flex items-start gap-4">
+				<div class="w-16 h-16 bg-gray-200 rounded-full"></div>
+				<div class="flex-1 space-y-3">
+					<div class="h-5 bg-gray-200 rounded-[2px] w-1/3"></div>
+					<div class="h-4 bg-gray-200 rounded-[2px] w-full"></div>
+					<div class="h-4 bg-gray-200 rounded-[2px] w-5/6"></div>
+					<div class="h-4 bg-gray-200 rounded-[2px] w-4/6"></div>
+				</div>
+			</div>
+			<div class="flex items-start gap-4">
+				<div class="w-16 h-16 bg-gray-200 rounded-full"></div>
+				<div class="flex-1 space-y-3">
+					<div class="h-5 bg-gray-200 rounded-[2px] w-1/4"></div>
+					<div class="h-4 bg-gray-200 rounded-[2px] w-full"></div>
+					<div class="h-4 bg-gray-200 rounded-[2px] w-3/4"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+// LeadersLoading renders loading state for Other Leaders section
+templ LeadersLoading() {
+	<div id="leaders-section" class="max-w-4xl mx-auto mt-12">
+		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+			Recent Remarks From Other Church Leaders
+		</h2>
+		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px] mb-6"></div>
+
+		<div class="flex items-center gap-3 text-gray-500">
+			<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+			</svg>
+			<span>Searching teachings from Church leaders...</span>
+		</div>
+
+		<!-- Skeleton cards -->
+		<div class="mt-6 space-y-6 animate-pulse">
+			<div class="flex items-start gap-4">
+				<div class="w-16 h-16 bg-gray-200 rounded-full"></div>
+				<div class="flex-1 space-y-3">
+					<div class="h-5 bg-gray-200 rounded-[2px] w-2/5"></div>
+					<div class="h-4 bg-gray-200 rounded-[2px] w-full"></div>
+					<div class="h-4 bg-gray-200 rounded-[2px] w-4/5"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+// ScripturesLoading renders loading state for Scriptures section
+templ ScripturesLoading() {
+	<div id="scriptures-section" class="max-w-4xl mx-auto mt-12">
+		<h2 class="text-3xl font-semibold text-accent-gold mb-2">
+			Related Scriptures
+		</h2>
+		<div class="w-24 h-[2px] bg-accent-gold rounded-[2px] mb-6"></div>
+
+		<div class="flex items-center gap-3 text-gray-500">
+			<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+			</svg>
+			<span>Finding relevant scriptures...</span>
+		</div>
+
+		<!-- Skeleton groups -->
+		<div class="mt-8 space-y-8 animate-pulse">
+			for range []int{0, 1, 2} {
+				<div>
+					<div class="h-6 bg-gray-200 rounded-[2px] w-32 mb-4"></div>
+					<div class="space-y-3">
+						<div class="h-4 bg-gray-200 rounded-[2px] w-1/2"></div>
+						<div class="h-4 bg-gray-200 rounded-[2px] w-5/6"></div>
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+// SummarySection renders the final summary paragraphs.
+templ SummarySection(paragraphs []string) {
+	<div class="max-w-4xl mx-auto">
+		<h2 class="text-3xl font-semibold text-gray-900 mb-2">Summary</h2>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px] mb-6"></div>
+		<div class="space-y-6 max-w-[720px]">
+			for _, p := range paragraphs {
+				<p class="text-xl text-gray-700 leading-relaxed">{ p }</p>
+			}
+		</div>
+	</div>
+}
+
+// SummaryLoading renders loading state for Summary section
+templ SummaryLoading() {
+	<div class="max-w-4xl mx-auto">
+		<h2 class="text-3xl font-semibold text-gray-900 mb-2">Summary</h2>
+		<div class="w-24 h-[2px] bg-primary rounded-[2px] mb-6"></div>
+		<div class="space-y-4 animate-pulse">
+			<div class="h-4 bg-gray-200 rounded-[2px] w-full"></div>
+			<div class="h-4 bg-gray-200 rounded-[2px] w-5/6"></div>
+			<div class="h-4 bg-gray-200 rounded-[2px] w-4/6"></div>
+		</div>
+	</div>
+}
+
+// AllSectionsLoading renders all loading skeletons
+templ AllSectionsLoading() {
+	<div class="space-y-8 py-8">
+		@PresidentsLoading()
+		@LeadersLoading()
+		@ScripturesLoading()
+	</div>
+}

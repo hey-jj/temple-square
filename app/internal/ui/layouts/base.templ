@@ -1,0 +1,38 @@
+package layouts
+
+// Base renders the base HTML layout with kiosk-specific meta tags.
+templ Base(title string) {
+	<!DOCTYPE html>
+	<html lang="en" class="h-full">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+			<meta name="apple-mobile-web-app-capable" content="yes"/>
+			<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+			<title>{ title }</title>
+			<link rel="stylesheet" href="/static/css/output.css"/>
+			<script src="/static/js/htmx.min.js"></script>
+			<script src="/static/js/htmx-ext-sse.min.js"></script>
+			<style>
+				/* Prevent text selection on kiosk */
+				body {
+					-webkit-user-select: none;
+					user-select: none;
+					-webkit-touch-callout: none;
+				}
+				/* Allow text selection in response area for accessibility */
+				.allow-select {
+					-webkit-user-select: text;
+					user-select: text;
+				}
+			</style>
+		</head>
+		<body class="h-full bg-surface text-gray-700 antialiased">
+			<!-- Skip Link for Keyboard Navigation (WCAG 2.4.1) -->
+			<a href="#main-content" class="skip-link">
+				Skip to main content
+			</a>
+			{ children... }
+		</body>
+	</html>
+}

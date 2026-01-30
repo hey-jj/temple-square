@@ -1,0 +1,8 @@
+.git
+.gitignore
+.env
+configs/.env
+tmp/
+*.md
+Makefile
+scripts/tailwindcss

@@ -1,0 +1,5 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile.toolbox', '-t', 'gcr.io/temple-square/prophet-toolbox:latest', '.']
+images:
+  - 'gcr.io/temple-square/prophet-toolbox:latest'

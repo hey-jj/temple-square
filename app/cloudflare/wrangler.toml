@@ -1,0 +1,13 @@
+name = "templesquare-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+account_id = "e4e4f001e0358d00af009eb7db7d89a4"
+
+# Use Custom Domains feature (auto-creates DNS)
+[[routes]]
+pattern = "templesquare.dev"
+custom_domain = true
+
+[[routes]]
+pattern = "www.templesquare.dev"
+custom_domain = true

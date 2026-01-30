@@ -1,0 +1,117 @@
+/* static/css/input.css */
+@import "tailwindcss";
+
+@source "../../internal/ui/**/*.templ";
+@source "../../templates/**/*.html";
+
+@theme {
+  /* Reference site colors */
+  --color-primary: #157493;
+  --color-primary-hover: #007DA5;
+  --color-accent-gold: #007DA5;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #FFFFFF;
+
+  /* Typography - Noto Sans with sensible fallbacks */
+  --font-sans: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+  --default-font-family: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+  --font-mono: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+  --default-mono-font-family: "Noto Sans", "Source Sans Pro", Arial, sans-serif;
+
+  /* Typography scale (matches reference sizing) */
+  --text-base: 1rem; /* 16px */
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem; /* 18px */
+  --text-lg--line-height: 1.6;
+  --text-3xl: 2rem; /* 32px */
+  --text-3xl--line-height: 1.25;
+  --text-4xl: 2.625rem; /* 42px */
+  --text-4xl--line-height: 1.15;
+
+  /* Borders */
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+}
+
+@plugin "@tailwindcss/typography";
+
+/* ==============================================
+   ACCESSIBILITY STYLES (WCAG 2.1 AA Compliance)
+   ============================================== */
+
+/* Screen reader only utility class */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Enforce single-family typography (no fallback stack) */
+html,
+body {
+  font-family: var(--default-font-family);
+}
+
+/* Skip link - visible on focus for keyboard navigation (WCAG 2.4.1) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 1rem 2rem;
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+  top: 1rem;
+  outline: 3px solid white;
+  outline-offset: 2px;
+}
+
+/* Global focus-visible styles (WCAG 2.4.7) */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Remove default focus outline only when using focus-visible */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Enhanced button focus */
+button:focus-visible,
+[type="submit"]:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(21, 116, 147, 0.3);
+}
+
+/* Enhanced input focus */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+
+/* Link focus */
+a:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

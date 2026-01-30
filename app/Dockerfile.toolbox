@@ -1,0 +1,22 @@
+# Dockerfile for MCP Toolbox Server
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download pre-built toolbox binary
+RUN curl -L -o /usr/local/bin/toolbox https://storage.googleapis.com/genai-toolbox/v0.26.0/linux/amd64/toolbox && \
+    chmod +x /usr/local/bin/toolbox
+
+# Copy tools configuration
+COPY tools.yaml /app/tools.yaml
+
+WORKDIR /app
+
+EXPOSE 8080
+
+# Environment variables for database connection will be passed at runtime
+# Cloud Run sets PORT env var (default 8080)
+ENTRYPOINT ["/bin/sh", "-c", "toolbox --tools-file /app/tools.yaml --address 0.0.0.0 --port ${PORT:-8080}"]

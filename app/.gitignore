@@ -1,0 +1,26 @@
+# Binaries
+bin/
+*.exe
+
+# Generated
+static/css/output.css
+*_templ.go
+
+# Environment
+.env
+configs/.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Dependencies (local dev only)
+scripts/tailwindcss
+
+# Temp
+tmp/
+*.log

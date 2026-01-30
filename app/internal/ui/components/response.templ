@@ -1,0 +1,146 @@
+package components
+
+import "net/url"
+
+// StreamContainerProps defines the properties for SSE streaming container.
+type StreamContainerProps struct {
+	SessionID string
+	Question  string
+}
+
+// streamURL builds the SSE connection URL with properly encoded query parameters.
+// Uses relative URL to work in both local development and production.
+// The /api/stream endpoint is served on the same port as the main application.
+func streamURL(props StreamContainerProps) string {
+	return "/api/stream?session=" + props.SessionID + "&q=" + url.QueryEscape(props.Question)
+}
+
+// StreamContainer renders the SSE streaming response container.
+// Includes skeleton loaders that appear immediately and get replaced by actual content.
+templ StreamContainer(props StreamContainerProps) {
+	<div
+		id="stream-wrapper"
+		hx-ext="sse"
+		sse-connect={ streamURL(props) }
+		sse-close="done"
+		hx-trigger="sse:done"
+		class="space-y-0"
+	>
+		<!-- Church Presidents Section (streams first) -->
+		<!-- Skeleton loader shown immediately, replaced by actual content via SSE -->
+		<div
+			sse-swap="presidents"
+			hx-swap="innerHTML"
+			class="bg-surface py-12 px-8"
+		>
+			@PresidentsLoading()
+		</div>
+
+		<!-- Other Leaders Section (streams second) -->
+		<!-- Skeleton loader shown immediately, replaced by actual content via SSE -->
+		<div
+			sse-swap="leaders"
+			hx-swap="innerHTML"
+			class="bg-surface-alt py-12 px-8"
+		>
+			@LeadersLoading()
+		</div>
+
+		<!-- Scripture Sections (stream last) -->
+		<!-- Skeleton loader shown immediately, replaced by actual content via SSE -->
+		<div
+			sse-swap="scriptures"
+			hx-swap="innerHTML"
+			class="bg-surface py-12 px-8"
+		>
+			@ScripturesLoading()
+		</div>
+
+		<!-- Summary Section (streams last) -->
+		<div
+			sse-swap="summary"
+			hx-swap="innerHTML"
+			class="bg-surface-alt py-12 px-8"
+		>
+			@SummaryLoading()
+		</div>
+
+		<!-- Error handling -->
+		<div
+			sse-swap="server-error"
+			hx-swap="innerHTML"
+			class="hidden"
+		></div>
+	</div>
+
+	<!-- Back to top button (appears after content loads) -->
+	<div class="fixed bottom-8 right-8">
+		<button
+			onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+			class="p-3 bg-primary text-white rounded-[2px]
+                   hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/20
+                   transition-colors"
+			aria-label="Back to top"
+		>
+			<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+			</svg>
+		</button>
+	</div>
+}
+
+// RedirectResponse renders the response for topics that need redirection.
+templ RedirectResponse(message string, questions []string) {
+	<div class="max-w-4xl mx-auto py-16 px-8">
+		<h2 class="text-3xl font-semibold text-accent-gold mb-6">Summary</h2>
+
+		<p class="text-lg text-gray-700 leading-relaxed mb-8 max-w-[720px]">
+			{ message }
+		</p>
+
+		<div class="space-y-4">
+			<p class="text-base text-gray-600 max-w-[720px]">
+				Here are some additional soul searching questions that might spark your curiosity:
+			</p>
+			<ul class="space-y-3">
+				for _, q := range questions {
+					<li>
+						<button
+							hx-post="/ask"
+							hx-vals={ `{"question": "` + q + `"}` }
+							hx-target="#response-area"
+							hx-swap="innerHTML"
+							class="text-base text-accent-gold hover:text-primary underline
+                                   focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-[2px]
+                                   transition-colors"
+						>
+							{ q }
+						</button>
+					</li>
+				}
+			</ul>
+		</div>
+
+		<!-- New Question Button -->
+		<div class="mt-12">
+			<a
+				href="/"
+				class="inline-flex items-center gap-2 px-6 py-3 text-base font-semibold
+                       text-primary border border-primary rounded-[2px]
+                       hover:bg-primary hover:text-white transition-colors"
+			>
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+				</svg>
+				Ask Another Question
+			</a>
+		</div>
+	</div>
+}
+
+// Response renders simple agent response content (legacy component).
+templ Response(content string) {
+	<div class="prose max-w-none">
+		{ content }
+	</div>
+}

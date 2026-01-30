@@ -1,0 +1,59 @@
+# docker-compose.yaml - Local development setup for Temple Square
+# Includes MCP Toolbox server and PostgreSQL database
+
+version: '3.8'
+
+services:
+  # PostgreSQL database with scriptures and talks data
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: conference
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # MCP Toolbox server - provides database tools to agents
+  toolbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.toolbox
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: conference
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_SSL_MODE: disable
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Prophet agent server (optional - for full local testing)
+  # Uncomment to run the full app locally
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     TOOLBOX_URL: http://toolbox:5000
+  #     GOOGLE_CLOUD_PROJECT: temple-square
+  #     GOOGLE_CLOUD_LOCATION: us-central1
+  #     HTTP_PORT: 8080
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - toolbox
+
+volumes:
+  postgres_data:
