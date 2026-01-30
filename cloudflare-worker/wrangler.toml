@@ -9,5 +9,9 @@ workers_dev = true
 pattern = "app.templesquare.dev"
 custom_domain = true
 
+[[routes]]
+pattern = "search.bcclab.dev"
+custom_domain = true
+
 [vars]
 BACKEND_URL = "https://ask-a-prophet-3izw7vdi5a-uw.a.run.app"
