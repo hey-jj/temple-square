@@ -816,7 +816,7 @@ var summarySchema = map[string]any{
 	"required": []string{"summary"},
 }
 
-const orchestratorPresidentsPrompt = `You are a safety checker and keyword generator for a Church of Jesus Christ search system.
+const orchestratorPresidentsPrompt = `You are a safety checker and keyword generator for The Church of Jesus Christ of Latter-day Saints search system.
 
 ## SAFETY CHECK
 Block the question (safe=false) if it contains:
