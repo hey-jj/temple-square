@@ -39,7 +39,7 @@ gcloud run deploy ask-a-prophet \
   --region us-west1 \
   --project temple-square \
   --allow-unauthenticated \
-  --set-env-vars="TOOLBOX_URL=https://prophet-toolbox-3izw7vdi5a-uw.a.run.app,API_PORT=8081" \
+  --set-env-vars="TOOLBOX_URL=https://prophet-toolbox-3izw7vdi5a-uw.a.run.app,API_PORT=8081,HTTP_PORT=8080" \
   --set-secrets="GEMINI_API_KEY=GEMINI_API_KEY:latest"
 ```
 
@@ -62,6 +62,11 @@ gcloud run deploy prophet-toolbox \
   --set-secrets="DB_PASSWORD=temple-square-db-password:latest" \
   --add-cloudsql-instances=temple-square:us-west1:temple-square-db
 ```
+
+### IMPORTANT: Ports
+The app serves the main site on **HTTP_PORT (8080)** and runs the internal SSE server on **API_PORT (8081)**.
+Cloud Run must listen on **port 8080**. If you deploy with `--port 8081`, `/` and `/static` will 404
+because only the SSE server is running on 8081.
 
 ### Cloudflare Worker (search.bcclab.dev)
 ```bash

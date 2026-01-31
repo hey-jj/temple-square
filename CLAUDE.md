@@ -223,9 +223,14 @@ Ensure `BACKEND_URL` in `wrangler.toml` points to the current Cloud Run URL.
 ```bash
 cd app && gcloud run deploy ask-a-prophet --source . --region us-west1 \
   --allow-unauthenticated \
-  --set-env-vars="TOOLBOX_URL=https://prophet-toolbox-3izw7vdi5a-uw.a.run.app,API_PORT=8081" \
+  --set-env-vars="TOOLBOX_URL=https://prophet-toolbox-3izw7vdi5a-uw.a.run.app,API_PORT=8081,HTTP_PORT=8080" \
   --set-secrets="GEMINI_API_KEY=GEMINI_API_KEY:latest"
 ```
+
+### IMPORTANT: Ports
+The app listens on `HTTP_PORT` (default 8080) for the main site and runs the internal SSE server on
+`API_PORT` (default 8081). Cloud Run **must** be configured to use port 8080. If you deploy with
+`--port 8081`, the service will only expose the SSE server and `/` will return 404.
 
 ### Deploy Toolbox
 ```bash
