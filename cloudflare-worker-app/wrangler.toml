@@ -9,4 +9,4 @@ pattern = "app.templesquare.dev"
 custom_domain = true
 
 [vars]
-BACKEND_URL = "https://deep-search-REPLACE.a.run.app"
+BACKEND_URL = "https://deep-search-594677951902.us-west1.run.app"
