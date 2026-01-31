@@ -189,8 +189,8 @@ func main() {
 		return response.Template{
 			Name: "home.html",
 			Data: map[string]interface{}{
-				"Title":       "What Would You Ask a Prophet?",
-				"Description": "Prophets receive revelation from God and share His will for our day. They testify of Jesus Christ, warn of spiritual dangers, and make timeless truths relevant now.",
+				"Title":       "Search General Conference and Scripture Messages",
+				"Description": "Contextual search across General Conference messages and scripture passages to surface relevant quotes and references.",
 				"AssetsURL":   getEnv("ASSETS_BASE_URL", "https://storage.googleapis.com/temple-square-assets"),
 			},
 		}, nil

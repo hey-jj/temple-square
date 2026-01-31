@@ -243,28 +243,6 @@ func (a *ProphetAgent) Run(ctx context.Context, question string) <-chan AgentRes
 					leadersWG.Add(1)
 					go func() {
 						defer leadersWG.Done()
-						content, err := a.runSearchAgent(ctx, "leaders_eyring",
-							leadersOrch.Keywords.LeadersFirstPres,
-							"get_leaders_talks",
-							map[string]any{"query": leadersOrch.Keywords.LeadersFirstPres, "limit": 3},
-							leadersEyringPrompt, quotesSchema)
-						results <- AgentResult{AgentName: "leaders_agent", Content: content, Error: err}
-					}()
-
-					leadersWG.Add(1)
-					go func() {
-						defer leadersWG.Done()
-						content, err := a.runSearchAgent(ctx, "leaders_christofferson",
-							leadersOrch.Keywords.LeadersFirstPres,
-							"get_leaders_talks",
-							map[string]any{"query": leadersOrch.Keywords.LeadersFirstPres, "limit": 3},
-							leadersChristoffersonPrompt, quotesSchema)
-						results <- AgentResult{AgentName: "leaders_agent", Content: content, Error: err}
-					}()
-
-					leadersWG.Add(1)
-					go func() {
-						defer leadersWG.Done()
 						content, err := a.runSearchAgent(ctx, "leaders_q12_a",
 							leadersOrch.Keywords.LeadersQ12,
 							"get_leaders_talks",
@@ -276,33 +254,11 @@ func (a *ProphetAgent) Run(ctx context.Context, question string) <-chan AgentRes
 					leadersWG.Add(1)
 					go func() {
 						defer leadersWG.Done()
-						content, err := a.runSearchAgent(ctx, "leaders_q12_b",
-							leadersOrch.Keywords.LeadersQ12,
-							"get_leaders_talks",
-							map[string]any{"query": leadersOrch.Keywords.LeadersQ12, "limit": 3},
-							leadersQ12PromptB, quotesSchema)
-						results <- AgentResult{AgentName: "leaders_agent", Content: content, Error: err}
-					}()
-
-					leadersWG.Add(1)
-					go func() {
-						defer leadersWG.Done()
 						content, err := a.runSearchAgent(ctx, "leaders_other_a",
 							leadersOrch.Keywords.LeadersOther,
 							"search_talks",
 							map[string]any{"query": leadersOrch.Keywords.LeadersOther, "limit": 3},
 							leadersOtherPromptA, quotesSchema)
-						results <- AgentResult{AgentName: "leaders_agent", Content: content, Error: err}
-					}()
-
-					leadersWG.Add(1)
-					go func() {
-						defer leadersWG.Done()
-						content, err := a.runSearchAgent(ctx, "leaders_other_b",
-							leadersOrch.Keywords.LeadersOther,
-							"search_talks",
-							map[string]any{"query": leadersOrch.Keywords.LeadersOther, "limit": 3},
-							leadersOtherPromptB, quotesSchema)
 						results <- AgentResult{AgentName: "leaders_agent", Content: content, Error: err}
 					}()
 
@@ -338,18 +294,6 @@ func (a *ProphetAgent) Run(ctx context.Context, question string) <-chan AgentRes
 			startLeaders()
 		}()
 
-		presidentsWG.Add(1)
-		go func() {
-			defer presidentsWG.Done()
-			content, err := a.runSearchAgent(ctx, "presidents_general",
-				presOrch.Keywords.PresidentsGeneral,
-				"get_presidents_talks",
-				map[string]any{"query": presOrch.Keywords.PresidentsGeneral, "limit": 3},
-				presidentsGeneralPrompt, quotesSchema)
-			results <- AgentResult{AgentName: "presidents_agent", Content: content, Error: err}
-			startLeaders()
-		}()
-
 		presidentsWG.Wait()
 		startLeaders()
 		<-leadersDone
@@ -368,7 +312,7 @@ func (a *ProphetAgent) Run(ctx context.Context, question string) <-chan AgentRes
 
 		var scripturesWG sync.WaitGroup
 
-		// Bible: 2 cards (Old Testament + New Testament)
+		// Bible: 1 card
 		scripturesWG.Add(1)
 		go func() {
 			defer scripturesWG.Done()
@@ -376,12 +320,12 @@ func (a *ProphetAgent) Run(ctx context.Context, question string) <-chan AgentRes
 			content, err := a.runSearchAgent(ctx, "scriptures_bible",
 				query,
 				"search_scriptures",
-				map[string]any{"query": query, "limit": 12},
+				map[string]any{"query": query, "limit": 6},
 				scripturesBiblePrompt, scripturesCategorySchema)
 			results <- AgentResult{AgentName: "scriptures_bible", Content: content, Error: err}
 		}()
 
-		// Book of Mormon: 2 cards
+		// Book of Mormon: 1 card
 		scripturesWG.Add(1)
 		go func() {
 			defer scripturesWG.Done()
@@ -389,12 +333,12 @@ func (a *ProphetAgent) Run(ctx context.Context, question string) <-chan AgentRes
 			content, err := a.runSearchAgent(ctx, "scriptures_bom",
 				query,
 				"search_scriptures",
-				map[string]any{"query": query, "limit": 12},
+				map[string]any{"query": query, "limit": 6},
 				scripturesBoMPrompt, scripturesCategorySchema)
 			results <- AgentResult{AgentName: "scriptures_bom", Content: content, Error: err}
 		}()
 
-		// Other scriptures: 2 cards (D&C + Pearl of Great Price)
+		// Other scriptures: 1 card
 		scripturesWG.Add(1)
 		go func() {
 			defer scripturesWG.Done()
@@ -402,7 +346,7 @@ func (a *ProphetAgent) Run(ctx context.Context, question string) <-chan AgentRes
 			content, err := a.runSearchAgent(ctx, "scriptures_other",
 				query,
 				"search_scriptures",
-				map[string]any{"query": query, "limit": 12},
+				map[string]any{"query": query, "limit": 6},
 				scripturesOtherPrompt, scripturesCategorySchema)
 			results <- AgentResult{AgentName: "scriptures_other", Content: content, Error: err}
 		}()
@@ -983,35 +927,32 @@ REQUIREMENTS:
 Return ONLY valid JSON in this exact format:
 {"scriptures":[{"volume":"Book of Mormon","reference":"Alma 32:21","text":"Exact scripture text...","related_talk":{"speaker":"Elder Name","title":"Talk Title","quote":"Short quote..."}}]}`
 
-const scripturesBiblePrompt = `You are a scripture selector. Select EXACTLY 2 scriptures from the Bible ONLY.
+const scripturesBiblePrompt = `You are a scripture selector. Select EXACTLY 1 scripture from the Bible ONLY.
 
 REQUIREMENTS:
-- Choose one Old Testament and one New Testament verse if possible
+- Prefer a verse from the Old or New Testament that best matches the question
 - Copy scripture text EXACTLY from the search results
 - Include volume and reference
 
 Return ONLY valid JSON in this exact format:
-{"scriptures":[{"volume":"Old Testament","reference":"Proverbs 3:5-6","text":"..."},
-{"volume":"New Testament","reference":"Hebrews 11:1","text":"..."}]}`
+{"scriptures":[{"volume":"Old Testament","reference":"Proverbs 3:5-6","text":"..."}]}`
 
-const scripturesBoMPrompt = `You are a scripture selector. Select EXACTLY 2 scriptures from the Book of Mormon ONLY.
+const scripturesBoMPrompt = `You are a scripture selector. Select EXACTLY 1 scripture from the Book of Mormon ONLY.
 
 REQUIREMENTS:
-- Choose distinct verses (prefer different books if possible)
+- Prefer a verse that directly answers the question
 - Copy scripture text EXACTLY from the search results
 - Include volume and reference
 
 Return ONLY valid JSON in this exact format:
-{"scriptures":[{"volume":"Book of Mormon","reference":"Alma 32:21","text":"..."},
-{"volume":"Book of Mormon","reference":"Ether 12:6","text":"..."}]}`
+{"scriptures":[{"volume":"Book of Mormon","reference":"Alma 32:21","text":"..."}]}`
 
-const scripturesOtherPrompt = `You are a scripture selector. Select EXACTLY 2 scriptures from Doctrine and Covenants or Pearl of Great Price ONLY.
+const scripturesOtherPrompt = `You are a scripture selector. Select EXACTLY 1 scripture from Doctrine and Covenants or Pearl of Great Price ONLY.
 
 REQUIREMENTS:
-- Prefer one from Doctrine and Covenants and one from Pearl of Great Price if possible
+- Prefer the most relevant verse for the question
 - Copy scripture text EXACTLY from the search results
 - Include volume and reference
 
 Return ONLY valid JSON in this exact format:
-{"scriptures":[{"volume":"Doctrine and Covenants","reference":"Doctrine and Covenants 33:12","text":"..."},
-{"volume":"Pearl of Great Price","reference":"Articles of Faith 1:4","text":"..."}]}`
+{"scriptures":[{"volume":"Doctrine and Covenants","reference":"Doctrine and Covenants 33:12","text":"..."}]}`

@@ -235,26 +235,6 @@ func handleSSEStream(w http.ResponseWriter, r *http.Request, agent *prophetagent
 		}
 	}
 
-	// Final summary (2-3 paragraphs)
-	allScriptures := append(append([]StructuredScripture{}, bibleScriptures...), bomScriptures...)
-	allScriptures = append(allScriptures, otherScriptures...)
-	summaryContent, err := agent.GenerateSummary(ctx, question,
-		toAgentQuotes(presidentsQuotes),
-		toAgentQuotes(leadersQuotes),
-		toAgentScriptures(allScriptures))
-	if err != nil {
-		log.Printf("SSE: Summary generation failed: %v", err)
-	} else if summaryContent != "" {
-		paras, err := parseSummaryFromContent(summaryContent)
-		if err != nil {
-			log.Printf("SSE: Failed to parse summary: %v", err)
-		} else if len(paras) > 0 {
-			if err := sendSummarySection(ctx, w, flusher, paras); err != nil {
-				log.Printf("SSE: Failed to render summary section: %v", err)
-			}
-		}
-	}
-
 	sendSSEDone(w, flusher)
 	log.Printf("SSE: Completed streaming for question: %s", question)
 }
@@ -354,6 +334,9 @@ func scriptureKey(s StructuredScripture) string {
 func sendPresidentsSection(ctx context.Context, w http.ResponseWriter, flusher http.Flusher, quotes []StructuredQuote) error {
 	orderedQuotes := append([]StructuredQuote(nil), quotes...)
 	sortPresidentsQuotes(orderedQuotes)
+	if len(orderedQuotes) > 2 {
+		orderedQuotes = orderedQuotes[:2]
+	}
 	speakers := convertQuotesToSpeakers(orderedQuotes)
 	var buf bytes.Buffer
 	if err := components.PresidentsSection(speakers).Render(ctx, &buf); err != nil {
@@ -386,6 +369,9 @@ func isOaksSpeaker(name string) bool {
 }
 
 func sendLeadersSection(ctx context.Context, w http.ResponseWriter, flusher http.Flusher, quotes []StructuredQuote) error {
+	if len(quotes) > 2 {
+		quotes = quotes[:2]
+	}
 	speakers := convertQuotesToSpeakers(quotes)
 	var buf bytes.Buffer
 	if err := components.LeadersSection(speakers).Render(ctx, &buf); err != nil {
@@ -397,6 +383,15 @@ func sendLeadersSection(ctx context.Context, w http.ResponseWriter, flusher http
 }
 
 func sendScripturesSection(ctx context.Context, w http.ResponseWriter, flusher http.Flusher, bible []StructuredScripture, bom []StructuredScripture, other []StructuredScripture) error {
+	if len(bible) > 1 {
+		bible = bible[:1]
+	}
+	if len(bom) > 1 {
+		bom = bom[:1]
+	}
+	if len(other) > 1 {
+		other = other[:1]
+	}
 	bibleCards := convertStructuredScriptures(bible)
 	bomCards := convertStructuredScriptures(bom)
 	otherCards := convertStructuredScriptures(other)

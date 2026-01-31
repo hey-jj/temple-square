@@ -56,15 +56,6 @@ templ StreamContainer(props StreamContainerProps) {
 			@ScripturesLoading()
 		</div>
 
-		<!-- Summary Section (streams last) -->
-		<div
-			sse-swap="summary"
-			hx-swap="innerHTML"
-			class="bg-surface-alt py-12 px-8"
-		>
-			@SummaryLoading()
-		</div>
-
 		<!-- Error handling -->
 		<div
 			sse-swap="server-error"
