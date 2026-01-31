@@ -20,6 +20,18 @@ export GEMINI_API_KEY=...
 
 ## Deployment
 
+### Branch + Domain Mapping
+- `main` -> Cloud Run `ask-a-prophet` -> **search.bcclab.dev**
+- `concise` -> Cloud Run `deep-search` -> **app.templesquare.dev**
+
+Two Cloudflare workers are used:
+- `cloudflare-worker/` (name: `temple-square`) routes **search.bcclab.dev**
+- `cloudflare-worker-app/` (name: `temple-square-app`) routes **app.templesquare.dev**
+
+Basic auth is enabled on both workers:
+- search.bcclab.dev password: `bcc-labs-25`
+- app.templesquare.dev password: `temple-square`
+
 ### Cloud Run (ask-a-prophet)
 ```bash
 gcloud run deploy ask-a-prophet \
@@ -51,10 +63,18 @@ gcloud run deploy prophet-toolbox \
   --add-cloudsql-instances=temple-square:us-west1:temple-square-db
 ```
 
-### Cloudflare Worker
+### Cloudflare Worker (search.bcclab.dev)
 ```bash
 cd cloudflare-worker
+npx wrangler secret put BASIC_AUTH_PASSWORD
 npx wrangler deploy
 ```
 
-Make sure `cloudflare-worker/wrangler.toml` points `BACKEND_URL` at the latest Cloud Run URL.
+### Cloudflare Worker (app.templesquare.dev)
+```bash
+cd cloudflare-worker-app
+npx wrangler secret put BASIC_AUTH_PASSWORD
+npx wrangler deploy
+```
+
+Make sure each worker's `wrangler.toml` points `BACKEND_URL` at the correct Cloud Run URL.
